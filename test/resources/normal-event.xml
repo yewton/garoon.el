@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schedule_event id="252525"
+                event_type="normal"
+                public_type="public"
+                plan="予定"
+                detail="テストイベント"
+                version="1412060653"
+                timezone="Asia/Tokyo"
+                end_timezone="Asia/Tokyo"
+                allday="false"
+                start_only="false"
+                >
+  <members xmlns="http://schemas.cybozu.co.jp/schedule/2008">
+    <member>
+      <user id="2525" name="テストユーザ" order="0"/>
+    </member>
+    <member>
+      <facility id="2525" name="テスト施設" order="1"/>
+    </member>
+  </members>
+  <when xmlns="http://schemas.cybozu.co.jp/schedule/2008">
+    <datetime start="2014-09-22T01:00:00Z" end="2014-09-22T03:00:00Z"/>
+  </when>
+  <follows xmlns="http://schemas.cybozu.co.jp/schedule/2008">
+    <follow id="2525" text="テストです" version="111111111111">
+      <creator user_id="2525" name="テストユーザ" date="2014-09-26T13:06:31Z" />
+    </follow>
+  </follows>
+</schedule_event>

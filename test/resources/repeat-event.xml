@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schedule_event id="259" event_type="repeat" public_type="public" plan="【往訪】" detail="サイボウズ株式会社" description="■目的&#10;・ガルーン3.5の製品デモを通じて、製品をご理解いただく&#10;・業務課題の解決案をご提案&#10;&#10;■準備物&#10;・カタログ：15部&#10;・ご提案資料：15部&#10;・デモ用PC&#10;・KUNAI端末&#10;&#10;■参考情報&#10;・サイボウズ様のホームページ&#10;　http://www.cybozu.co.jp/&#10;&#10;※メンバーへの情報共有については、下の「フォロー」欄に書き込みをお願いします。" version="1396380218" timezone="Asia/Tokyo" allday="false" start_only="false">
+  <members xmlns="http://schemas.cybozu.co.jp/schedule/2008">
+    <member>
+      <user id="6" name="佐藤 昇" order="0"/>
+    </member>
+    <member>
+      <user id="3" name="山田 隆志" order="1"/>
+    </member>
+    <member>
+      <user id="10" name="田中美子" order="2"/>
+    </member>
+    <member>
+      <user id="7" name="鈴木 拓也" order="3"/>
+    </member>
+    <member>
+      <user id="14" name="松田 環奈" order="4"/>
+    </member>
+    <member>
+      <facility id="17" name="社用車１" order="5"/>
+    </member>
+  </members>
+  <customer xmlns="http://schemas.cybozu.co.jp/schedule/2008" name="サイボウズ（株）" zipcode="112-0004" address="東京都文京区後楽1-4-14後楽森ビル12F" map="http://netmap.ns.cybozu.co.jp/netservice/mp/?&amp;nl=35/42/1.149&amp;el=139/45/9.819&amp;scl=10000&amp;size=480,480&amp;icon1=mark_loc2_16,0,,,,&amp;mp1=35/42/01.149,139/45/09.819&amp;icon2=copy_mark,0,,,,&amp;mp2=35/41/55.008,139/45/15.635" route="東京 － 中央線 － 御茶ノ水 － 総武線各停 － 水道橋" route_time="10" route_fare="150" phone="03-5805-9035"/>
+  <repeat_info xmlns="http://schemas.cybozu.co.jp/schedule/2008">
+    <condition type="week" day="11" week="1" start_date="2014-04-01" end_date="2015-03-01" start_time="10:00:00" end_time="12:00:00"/>
+    <exclusive_datetimes>
+    </exclusive_datetimes>
+  </repeat_info>
+</schedule_event>
