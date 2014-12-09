@@ -30,31 +30,10 @@
 (require 's)
 
 (ert-deftest grn:get-schedule-events-test ()
-  (grn:get-schedule-events (safe-date-to-time "2014-09-22 00:00:00"))
-  (with-current-buffer "*GAROON EVENTS*"
-    (let ((actual (buffer-string))
-          (expected (s-join "\n"
-                            '("* [[http://onlinedemo2.cybozu.info/scripts/garoon3/grn.exe/schedule/view?event%3D259&bdate%3D2014-09-22][サイボウズ株式会社]]"
-                              "  :PROPERTIES:"
-                              "  :FACILITIES: 社用車１"
-                              "  :PLAN:     【往訪】"
-                              "  :END:"
-                              "[2014-09-22 月 10:00]--[2014-09-22 月 12:00]"
-                              ""
-                              "* [[http://onlinedemo2.cybozu.info/scripts/garoon3/grn.exe/schedule/view?event%3D260&bdate%3D2014-09-22][マネージャーミーティング]]"
-                              "  :PROPERTIES:"
-                              "  :FACILITIES: プロジェクターB / 第二会議室"
-                              "  :PLAN:     【会議】"
-                              "  :END:"
-                              "[2014-09-22 月 15:00]--[2014-09-22 月 17:00]"
-                              ""
-                              "* [[http://onlinedemo2.cybozu.info/scripts/garoon3/grn.exe/schedule/view?event%3D261&bdate%3D2014-09-22][ディベート]]"
-                              "  :PROPERTIES:"
-                              "  :FACILITIES: セミナールーム"
-                              "  :PLAN:     【会議】"
-                              "  :END:"
-                              "[2014-09-22 月 17:00]--[2014-09-22 月 18:30]"
-                              ""
-                              ""))))
-      (should (string= actual expected)))))
+  (let ((time (current-time)))
+    (grn:get-schedule-events time)
+    (with-current-buffer "*GAROON EVENTS*"
+      (let ((actual (buffer-string))
+            (datestr (concat "<" (format-time-string "%Y-%m-%d" time))))
+        (should (not (null (string-match datestr actual))))))))
 ;;; garoon-it.el ends here

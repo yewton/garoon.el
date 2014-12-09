@@ -54,7 +54,7 @@
         (current-time (sdt "2014-09-22 12:00:00")))
   (with-temp-buffer
     (grn:insert-org-time-range start end current-time)
-    (should (string= (buffer-string) "[2014-09-22 月 00:00]--<2014-09-22 月 23:59>")))))
+    (should (string= (buffer-string) "<2014-09-22 月 00:00>--<2014-09-22 月 23:59>")))))
 
 (ert-deftest grn:time-set-test ()
   (let ((time (sdt "2014-09-22 00:00:00")))
@@ -222,7 +222,7 @@
            (current-time (sdt "2014-09-22 11:00:00")))
       (grn:handle-repeat-event datetime event current-time)
       (should (string= (buffer-string)
-                       "[2014-09-22 月 10:00]--<2014-09-22 月 12:00>")))))
+                       "<2014-09-22 月 10:00>--<2014-09-22 月 12:00>")))))
 
 (ert-deftest grn:handle-normal-event-test ()
   (with-temp-buffer
@@ -231,7 +231,7 @@
            (current-time (sdt "2014-09-22 11:00:00")))
       (grn:handle-normal-event datetime event current-time)
       (should (string= (buffer-string)
-                       "[2014-09-22 月 10:00]--<2014-09-22 月 12:00>")))))
+                       "<2014-09-22 月 10:00>--<2014-09-22 月 12:00>")))))
 
 (ert-deftest grn:handle-event-test ()
   (with-temp-buffer
@@ -246,7 +246,7 @@
                                  "  :FACILITIES: テスト施設"
                                  "  :PLAN:     予定"
                                  "  :END:"
-                                 "[2014-09-22 月 10:00]--<2014-09-22 月 12:00>"
+                                 "<2014-09-22 月 10:00>--<2014-09-22 月 12:00>"
                                  ""
                                  "")))))))
 

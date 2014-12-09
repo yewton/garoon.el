@@ -132,9 +132,7 @@ not recommended to use."
 ;;;; Utilities.
 
 (defun grn:insert-org-timestamp (time &optional with-hm current-time)
-  (let* ((current-time (or current-time (current-time)))
-         (inactive (time-less-p time current-time)))
-  (org-insert-time-stamp time with-hm inactive)))
+  (org-insert-time-stamp time with-hm))
 
 (defun grn:insert-org-time-range (start end &optional current-time)
   (grn:insert-org-timestamp start t current-time)
