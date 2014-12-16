@@ -29,9 +29,9 @@
 
 (require 's)
 
-(ert-deftest grn:get-schedule-events-test ()
+(ert-deftest grn-get-schedule-events-test ()
   (let ((time (current-time)))
-    (grn:get-schedule-events time)
+    (grn-get-schedule-events time)
     (with-current-buffer "*GAROON EVENTS*"
       (let ((actual (buffer-string))
             (datestr (concat "<" (format-time-string "%Y-%m-%d" time))))
