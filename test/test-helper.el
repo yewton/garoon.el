@@ -15,8 +15,7 @@
   (expand-file-name file g-test-resource-path))
 
 (custom-set-variables
- '(grn-username "sato")
- '(grn-password "sato")
- '(grn-debug t))
+ '(grn-debug t)
+ '(auth-sources `((:source ,(expand-file-name ".authinfo" g-test-test-path)))))
 
 (load (expand-file-name "garoon" g-test-root-path) 'noerror 'nomessage)

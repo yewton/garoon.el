@@ -31,6 +31,13 @@
 
 (fset 'sdt 'safe-date-to-time)
 
+;;;; Variables.
+(ert-deftest grn--endpoint-host-test ()
+  (should (string= grn--endpoint-host "onlinedemo2.cybozu.info")))
+
+(ert-deftest grn--endpoint-port-test ()
+  (should (equal grn--endpoint-port 80)))
+
 ;;;; Structures.
 
 (ert-deftest grn--api-base-url-test ()
@@ -94,7 +101,7 @@
 
 (ert-deftest grn--create-security-element-test ()
   (should
-   (string= (grn--create-security-element)
+   (string= (grn--create-security-element (grn--credentials))
             (s-join "\n"
                     '("<Security xmlns:wsu=\"http://schemas.xmlsoap.org/ws/2002/07/utility\""
                       "SOAP-ENV:mustUnderstand=\"1\""
@@ -133,7 +140,7 @@
         (create-time (sdt "2014-09-22 12:34:56"))
         (expire-time (sdt "2036-02-06 15:28:15")))
     (should (string=
-             (grn--create-envelope action create-time expire-time)
+             (grn--create-envelope action create-time expire-time (grn--credentials))
              (s-join "\n"
                      '("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                        "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\">"

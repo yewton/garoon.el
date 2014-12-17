@@ -4,7 +4,7 @@
 
 ;; Author: yewton <yewton@gmail.com>
 ;; Version: 0.0.1
-;; Keywords: garoon tool
+;; Keywords: garoon tool gpg
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -23,19 +23,25 @@
 
 ;;; Commentary:
 
+;; You need gpg 的ななにか
+
 ;; A Garron client.
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl))
-
+(eval-when-compile (require 'cl-lib)
+                   (require 'dash)
+                   (require 'ht))
 (require 'mm-decode)
 (require 'org)
 (require 's)
 (require 'soap-client)
 (require 'url)
 (require 'xml)
+
+;;;; Variables.
+(defvar grn--endpoint-host)
+(defvar grn--endpoint-port)
 
 ;;;; Customize.
 
@@ -47,22 +53,12 @@
   "http://onlinedemo2.cybozu.info/scripts/garoon3/grn.exe"
   "The location for the Garoon service."
   :type 'string
-  :group 'garoon)
-
-(defcustom grn-username
-  "sato"
-  "Username for the Garoon service."
-  :type 'string
-  :group 'garoon)
-
-(defcustom grn-password
-  nil
-  "If non-nil, used as the password for the Garoon service.
-
-For security reasons, this option is turned off by default and
-not recommended to use."
-  :type 'string
-  :group 'garoon)
+  :group 'garoon
+  :set (lambda (symbol value)
+         (let ((url (url-generic-parse-url value)))
+           (setq grn--endpoint-host (url-host url))
+           (setq grn--endpoint-port (url-port url)))
+         (set-default symbol value)))
 
 (defcustom grn-expire-time
   (encode-time 0 0 0 31 11 2037 t)
@@ -131,6 +127,29 @@ not recommended to use."
 
 ;;;; Utilities.
 
+(defun grn--credentials ()
+  (let* ((auth-source-creation-prompts
+          '((user  . "Garoon user: ")
+            (secret . "Garoon password for %u: ")))
+         (found (cl-first (auth-source-search :max 1
+                                              :host grn--endpoint-host
+                                              :port grn--endpoint-port
+                                              :require '(:user :secret)
+                                              :create t))))
+    (when found
+      (eval `(ht ,@(--map `(,it ,(plist-get found it))
+                          '(:user :secret :save-function)))))))
+
+(defun grn--credentials-username (credentials) (ht-get credentials :user))
+
+(defun grn--credentials-password (credentials)
+  (let ((secret (ht-get credentials :secret)))
+    (if (functionp secret) (funcall secret) secret)))
+
+(defun grn--credentials-save (credentials)
+  (let ((save-function (ht-get credentials :save-function)))
+    (when (functionp save-function) (funcall save-function))))
+
 (defun grn--insert-org-timestamp (time &optional with-hm current-time)
   (org-insert-time-stamp time with-hm))
 
@@ -139,12 +158,12 @@ not recommended to use."
   (insert "--")
   (grn--insert-org-timestamp end t current-time))
 
-(defun* grn--time-set (time &key hour min sec)
+(cl-defun grn--time-set (time &key hour min sec)
   (let* ((decoded (decode-time time))
-         (hour (or hour (third decoded)))
-         (min (or min (second decoded)))
-         (sec (or sec (first decoded))))
-    (apply 'encode-time `(,sec ,min ,hour ,@(cdddr decoded)))))
+         (hour (or hour (cl-third decoded)))
+         (min (or min (cl-second decoded)))
+         (sec (or sec (cl-first decoded))))
+    (apply 'encode-time `(,sec ,min ,hour ,@(cl-cdddr decoded)))))
 
 (defun grn--time-start-of-day (time)
   (grn--time-set time :hour 0 :min 0 :sec 0))
@@ -168,14 +187,14 @@ not recommended to use."
 (defun grn-get-password ()
   (or grn-password (read-passwd "Password: ")))
 
-(defun grn--create-security-element ()
+(defun grn--create-security-element (credentials)
   (s-join "\n"
           `(,(format "<Security xmlns:wsu=\"%s\"" grn-soap-util-ns)
             "SOAP-ENV:mustUnderstand=\"1\""
             ,(format "xmlns=\"%s\">" grn-soap-sec-ns)
             "<UsernameToken wsu:Id=\"id\">"
-            ,(format "<Username>%s</Username>" grn-username)
-            ,(format "<Password>%s</Password>" (grn-get-password))
+            ,(format "<Username>%s</Username>" (grn--credentials-username credentials))
+            ,(format "<Password>%s</Password>" (grn--credentials-password credentials))
             "</UsernameToken>"
             "</Security>")))
 
@@ -195,13 +214,13 @@ not recommended to use."
               ,(format "</%s>" action-name)
               "</SOAP-ENV:Body>"))))
 
-(defun grn--create-envelope (action create-time expire-time)
+(defun grn--create-envelope (action create-time expire-time credentials)
   (s-join "\n"
           `("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             ,(format "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"%s\">" grn-soap-env-ns)
             "<SOAP-ENV:Header>"
             ,(grn--create-action-element (grn-action-name action))
-            ,(grn--create-security-element)
+            ,(grn--create-security-element credentials)
             ,(grn--create-timestamp-element create-time expire-time)
             ,(format "<Locale>%s</Locale>" grn-locale)
             "</SOAP-ENV:Header>"
@@ -221,14 +240,15 @@ not recommended to use."
         'returns)))
 
 (defun grn--invoke-action (action)
-  (let ((url-request-method "POST")
-        (url-package-name "garoon.el")
-        (url-request-data
-         (grn--create-envelope action (current-time) grn-expire-time))
-        (url-mime-charset-string "utf-8;q=1, iso-8859-1;q=0.5")
-        (url-debug grn-debug)
-        (url (grn-action-url action))
-        buffer mime-part)
+  (let* ((credentials (grn--credentials))
+         (url-request-method "POST")
+         (url-package-name "garoon.el")
+         (url-request-data
+          (grn--create-envelope action (current-time) grn-expire-time credentials))
+         (url-mime-charset-string "utf-8;q=1, iso-8859-1;q=0.5")
+         (url-debug grn-debug)
+         (url (grn-action-url action))
+         buffer mime-part)
     (setq buffer (url-retrieve-synchronously url))
     (with-current-buffer buffer
       (when grn-debug
@@ -243,6 +263,7 @@ not recommended to use."
     (kill-buffer buffer)
     (unless mime-part
       (error "Failed to decode response from server"))
+    (grn--credentials-save credentials)
     (with-temp-buffer
       (mm-insert-part mime-part)
       (decode-coding-region (point-min) (point-max) 'utf-8)
@@ -291,8 +312,8 @@ not recommended to use."
                 'condition)))
          (start-hm (mapcar 'string-to-int (s-split ":" (xml-get-attribute condition 'start_time))))
          (end-hm (mapcar 'string-to-int (s-split ":" (xml-get-attribute condition 'end_time))))
-         (start (grn--time-set datetime :hour (first start-hm) :min (second start-hm)))
-         (end (grn--time-set datetime :hour (first end-hm) :min (second end-hm))))
+         (start (grn--time-set datetime :hour (cl-first start-hm) :min (cl-second start-hm)))
+         (end (grn--time-set datetime :hour (cl-first end-hm) :min (cl-second end-hm))))
     (grn--insert-org-time-range start end current-time)))
 
 (defun grn--handle-normal-event (datetime event &optional current-time)
